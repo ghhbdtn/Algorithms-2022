@@ -1,6 +1,13 @@
 package lesson1;
 
 import kotlin.NotImplementedError;
+import kotlin.Pair;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class JavaTasks {
@@ -34,8 +41,67 @@ public class JavaTasks {
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
-    static public void sortTimes(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static public void sortTimes(String inputName, String outputName) throws IOException {
+        //Время О(nlog(n))
+        //Ресурсоемкость S(n)
+
+        List<Integer> result = new ArrayList<>();
+        try ( BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputName)))) {
+            String timeStr = reader.readLine();
+            while(timeStr != null){
+                int seconds = timeToSeconds(timeStr);
+                result.add(seconds);
+                timeStr = reader.readLine();
+            }
+        }
+
+        Collections.sort(result);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputName))) {
+            String finalStr;
+            for (int seconds : result) {
+                finalStr = secondsToTime(seconds);
+                writer.write(finalStr + "\n");
+            }
+        }
+
+    }
+
+    public static int timeToSeconds(String time) {
+        if (!time.matches("^(0[1-9]|1[0-2]):([0-5]\\d):([0-5]\\d) [PA]M$")) throw new IllegalArgumentException();
+        String [] timeParts = time.split("[:|\\s]");
+        int hh = Integer.parseInt(timeParts[0]);
+        int mm = Integer.parseInt(timeParts[1]);
+        int ss = Integer.parseInt(timeParts[2]);
+        int seconds;
+        if (hh == 12) {
+            if (Objects.equals(timeParts[3], "AM")) hh = 0;
+        }
+        else {
+            if (Objects.equals(timeParts[3], "PM")) hh += 12;
+        }
+        seconds = hh * 3600 + mm * 60 + ss;
+        return seconds;
+    }
+
+    public static String secondsToTime(int seconds) {
+        int hh = seconds / 3600;
+        int mm = seconds  / 60 - hh * 60;
+        int ss = seconds  - hh * 3600 - mm * 60;
+        DecimalFormat df = new DecimalFormat("00");
+        String last = "AM";
+        if (hh == 12) last = "PM";
+        else
+        if (hh == 0) {
+            hh = 12;
+            last = "AM";
+        }
+        else
+        if (hh > 12) {
+            hh -= 12;
+            last = "PM";
+        }
+        return df.format(hh) + ":" + df.format(mm) + ":" + df.format(ss) + " " + last;
     }
 
     /**
@@ -98,8 +164,40 @@ public class JavaTasks {
      * 99.5
      * 121.3
      */
-    static public void sortTemperatures(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static public void sortTemperatures(String inputName, String outputName) throws IOException {
+        //Время О(n)
+        //Ресурсоемкость S(1)
+        int numberOfValues = 5000 + 2730 + 1;
+        int[] countOfValues = new int[numberOfValues];
+        for (int i = 0; i < numberOfValues; i++){
+            countOfValues[i] = 0;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputName)))) {
+            String temperature = reader.readLine();
+            while (temperature != null) {
+                String[] parts = temperature.split("\\.");
+                int index;
+                if (temperature.startsWith("-")) {
+                    index = (Integer.parseInt(parts[0]) * 10 - Integer.parseInt(parts[1])) + 2730;
+                } else index = Integer.parseInt(parts[0]) * 10 + Integer.parseInt(parts[1]) + 2730;
+                countOfValues[index]++;
+                temperature = reader.readLine();
+            }
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputName))) {
+            for (int i = 0; i < numberOfValues; i++) {
+                int value = countOfValues[i];
+                if (value != 0) {
+                    double n = (i - 2730) / 10.0;
+                    for (int j = 1; j <= value; j++) {
+                        writer.write(n + "\n");
+                    }
+                }
+            }
+        }
+
     }
 
     /**
@@ -131,8 +229,37 @@ public class JavaTasks {
      * 2
      * 2
      */
-    static public void sortSequence(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static public void sortSequence(String inputName, String outputName) throws IOException {
+        //Время О(n)
+        //Ресурсоемкость S(n)
+        Map<Integer, Integer> counter = new HashMap<>();
+        List<Integer> numbers = new ArrayList<>();
+        Pair<Integer, Integer> maxCountNum = new Pair<>(0,0);
+        Scanner sc = new Scanner(Paths.get(inputName));
+        while (sc.hasNextLine()){
+            Integer number = Integer.parseInt(sc.nextLine());
+            if (!counter.containsKey(number)) counter.put(number, 1);
+            else counter.put(number, counter.get(number) + 1);
+            numbers.add(number);
+        }
+        for(Map.Entry<Integer, Integer> entry : counter.entrySet()){
+            if (maxCountNum.getSecond() == 0)
+                maxCountNum = new Pair<>(entry.getKey(), entry.getValue());
+            if (maxCountNum.getSecond() < entry.getValue())
+                maxCountNum = new Pair<>(entry.getKey(), entry.getValue());
+            if (Objects.equals(maxCountNum.getSecond(), entry.getValue()) && entry.getKey() < maxCountNum.getFirst())
+                maxCountNum = new Pair<>(entry.getKey(), entry.getValue());
+        }
+
+        PrintWriter writer = new PrintWriter(outputName, StandardCharsets.UTF_8);
+        for (Integer num : numbers) {
+            if (!Objects.equals(num, maxCountNum.getFirst()))
+                writer.write(num + "\n");
+        }
+        for (int i = 0; i < maxCountNum.getSecond(); i++){
+            writer.write(maxCountNum.getFirst() + "\n");
+        }
+        writer.close();
     }
 
     /**
@@ -152,4 +279,5 @@ public class JavaTasks {
     static <T extends Comparable<T>> void mergeArrays(T[] first, T[] second) {
         throw new NotImplementedError();
     }
+
 }

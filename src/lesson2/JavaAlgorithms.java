@@ -3,6 +3,13 @@ package lesson2;
 import kotlin.NotImplementedError;
 import kotlin.Pair;
 
+import java.io.*;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Scanner;
+
+import static java.lang.Math.sqrt;
+
 @SuppressWarnings("unused")
 public class JavaAlgorithms {
     /**
@@ -29,8 +36,40 @@ public class JavaAlgorithms {
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
-    static public Pair<Integer, Integer> optimizeBuyAndSell(String inputName) {
-        throw new NotImplementedError();
+    static public Pair<Integer, Integer> optimizeBuyAndSell(String inputName) throws IOException {
+        //Время О(n)
+        //Ресурсоемкость S(1)
+        Pair<Integer, Integer> sell = new Pair<>(0, 0);
+        Pair<Integer, Integer> buy = new Pair<>(0, 0);
+        Pair <Integer, Integer> possibleBuy = new Pair<>(0, 0);
+        int lineNumber = 0;
+        String currentLine;
+        int currentCost;
+        Scanner reader = new Scanner(Paths.get(inputName));
+        while (reader.hasNextLine()) {
+            currentLine = reader.nextLine();
+            if (!currentLine.matches("^\\d+$")) throw new IllegalArgumentException();
+            lineNumber++;
+
+            if (lineNumber == 1) {
+                currentCost = Integer.parseInt(currentLine);
+                sell = new Pair<>(lineNumber, currentCost);
+                buy = new Pair<>(lineNumber, currentCost);
+                possibleBuy = new Pair<>(lineNumber, currentCost);
+                continue;
+            }
+
+            currentCost = Integer.parseInt(currentLine);
+            if (currentCost - buy.getSecond() > sell.getSecond() - buy.getSecond())
+                sell = new Pair<>(lineNumber, currentCost);
+            if (currentCost - possibleBuy.getSecond() > sell.getSecond() - buy.getSecond()) {
+                sell = new Pair<>(lineNumber, currentCost);
+                buy = new Pair<>(possibleBuy.getFirst(), possibleBuy.getSecond());
+            }
+            if (possibleBuy.getSecond() > currentCost)
+                possibleBuy =  new Pair<>(lineNumber, currentCost);
+        }
+        return new Pair<>(buy.getFirst(), sell.getFirst());
     }
 
     /**
@@ -97,8 +136,30 @@ public class JavaAlgorithms {
      * Если имеется несколько самых длинных общих подстрок одной длины,
      * вернуть ту из них, которая встречается раньше в строке first.
      */
-    static public String longestCommonSubstring(String firs, String second) {
-        throw new NotImplementedError();
+    static public String longestCommonSubstring(String first, String second) {
+        //m - длина первой строки, n - длина второй строки
+        //Время О(m * n)
+        //Ресурсоемкость S(m * n)
+
+        if(first.length() == 0 ||second.length() == 0) return "";
+
+        int[][] matrix = new int[first.length() + 1][second.length() + 1];
+        int length = 0;
+        int end = 0;
+        for(int i = 1; i < first.length(); i++){
+            for(int j = 1; j < second.length(); j++){
+                if (first.charAt(i - 1) == second.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1] + 1;
+                    int l = matrix[i][j];
+                    if (l > length) {
+                        length = l;
+                        end = i;
+                    }
+                }
+            }
+        }
+        if (end == 0) return "";
+        else return first.substring(end - length, end);
     }
 
     /**
@@ -111,7 +172,29 @@ public class JavaAlgorithms {
      * Справка: простым считается число, которое делится нацело только на 1 и на себя.
      * Единица простым числом не считается.
      */
+
     static public int calcPrimesNumber(int limit) {
-        throw new NotImplementedError();
+        //Алгоритм решета Эратосфена
+        //Время О(nlog(log(n)))
+        //Ресурсоемкость S(n)
+
+        if (limit <= 1) return 0;
+        int counter = 0;
+        boolean[] primes = new boolean[limit + 1];
+        Arrays.fill(primes, true);
+        primes[0] = false;
+        primes[1] = false;
+        for (int i = 2; i * i <= limit; i++){
+            if (primes[i]){
+                for (int j = 2 * i; j <= limit; j += i) {
+                    primes[j] = false;
+                }
+            }
+
+        }
+        for (int i = 2; i <= limit; i++) {
+            if (primes[i]) counter++;
+        }
+        return counter;
     }
 }

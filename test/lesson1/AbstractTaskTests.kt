@@ -1,10 +1,12 @@
 package lesson1
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import util.PerfResult
 import util.estimate
 import java.io.BufferedWriter
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.math.abs
 import kotlin.system.measureNanoTime
@@ -13,9 +15,9 @@ abstract class AbstractTaskTests : AbstractFileTests() {
 
     protected fun sortTimes(sortTimes: (String, String) -> Unit) {
         try {
-            sortTimes("input/time_in1.txt", "temp.txt")
+            sortTimes("input/time_in1.txt", "input/temp.txt")
             assertFileContent(
-                "temp.txt",
+                "input/temp.txt",
                 """
                      12:40:31 AM
                      07:26:57 AM
@@ -26,30 +28,40 @@ abstract class AbstractTaskTests : AbstractFileTests() {
                 """.trimIndent()
             )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortTimes("input/time_in2.txt", "temp.txt")
+            sortTimes("input/time_in2.txt", "input/temp.txt")
             assertFileContent(
-                "temp.txt",
+                "input/temp.txt",
                 """
                      12:00:00 AM
                 """.trimIndent()
             )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortTimes("input/time_in3.txt", "temp.txt")
-            assertFileContent("temp.txt", File("input/time_out3.txt").readLines())
+            sortTimes("input/time_in3.txt", "input/temp.txt")
+            assertFileContent("input/temp.txt", File("input/time_out3.txt").readLines())
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortTimes("input/empty.txt", "temp.txt")
-            assertFileContent("temp.txt", "")
+            sortTimes("input/empty.txt", "input/temp.txt")
+            assertFileContent("input/temp.txt", "")
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
+        }
+        try {
+            assertThrows(IllegalArgumentException::class.java) {sortTimes("input/time_in4.txt","input/temp.txt")}
+        } finally {
+            File("input/temp.txt").delete()
+        }
+        try {
+            assertThrows(IllegalArgumentException::class.java) {sortTimes("input/time_in5.txt","input/temp.txt")}
+        } finally {
+            File("input/temp.txt").delete()
         }
     }
 
@@ -106,17 +118,17 @@ abstract class AbstractTaskTests : AbstractFileTests() {
             close()
         }
 
-        File("temp_sorted_expected.txt").bufferedWriter().writeTemperatures()
+        File("input/temp_sorted_expected.txt").bufferedWriter().writeTemperatures()
         temperatures.shuffle(random)
-        File("temp_unsorted.txt").bufferedWriter().writeTemperatures()
+        File("input/temp_unsorted.txt").bufferedWriter().writeTemperatures()
         return PerfResult(size = temperatures.size, data = Unit)
     }
 
     protected fun sortTemperatures(sortTemperatures: (String, String) -> Unit) {
         try {
-            sortTemperatures("input/temp_in1.txt", "temp.txt")
+            sortTemperatures("input/temp_in1.txt", "input/temp.txt")
             assertFileContent(
-                "temp.txt",
+                "input/temp.txt",
                 """
                     -98.4
                     -12.6
@@ -128,25 +140,46 @@ abstract class AbstractTaskTests : AbstractFileTests() {
                 """.trimIndent()
             )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortTemperatures("input/empty.txt", "temp.txt")
-            assertFileContent("temp.txt", "")
+            sortTemperatures("input/temp_in2.txt", "input/temp.txt")
+            assertFileContent(
+                "input/temp.txt",
+                """
+                    -270.8
+                    -10.5
+                    -1.7
+                    -0.1
+                    0.1
+                    1.7
+                    9.5
+                    10.9
+                    45.8
+                    270.8
+                """.trimIndent()
+            )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
+        try {
+            sortTemperatures("input/empty.txt", "input/temp.txt")
+            assertFileContent("input/temp.txt", "")
+        } finally {
+            File("input/temp.txt").delete()
+        }
+
 
         fun testGeneratedTemperatures(size: Int): PerfResult<Unit> {
             try {
                 val res = generateTemperatures(size)
-                val time = measureNanoTime { sortTemperatures("temp_unsorted.txt", "temp_sorted_actual.txt") }
-                assertFileContent("temp_sorted_actual.txt", File("temp_sorted_expected.txt").readLines())
+                val time = measureNanoTime { sortTemperatures("input/temp_unsorted.txt", "input/temp_sorted_actual.txt") }
+                assertFileContent("input/temp_sorted_actual.txt", File("input/temp_sorted_expected.txt").readLines())
                 return res.copy(time = time)
             } finally {
-                File("temp_unsorted.txt").delete()
-                File("temp_sorted_expected.txt").delete()
-                File("temp_sorted_actual.txt").delete()
+                File("input/temp_unsorted.txt").delete()
+                File("input/temp_sorted_expected.txt").delete()
+                File("input/temp_sorted_actual.txt").delete()
             }
         }
 
@@ -185,7 +218,7 @@ abstract class AbstractTaskTests : AbstractFileTests() {
             close()
         }
 
-        File("temp_sequence_expected.txt").bufferedWriter().writeNumbers(numbers)
+        File("input/temp_sequence_expected.txt").bufferedWriter().writeNumbers(numbers)
         for (i in totalSize - answerSize until totalSize) {
             numbers.removeAt(totalSize - answerSize)
         }
@@ -194,16 +227,16 @@ abstract class AbstractTaskTests : AbstractFileTests() {
             numbers.add(toInsert, answer)
 
         }
-        File("temp_sequence.txt").bufferedWriter().writeNumbers(numbers)
+        File("input/temp_sequence.txt").bufferedWriter().writeNumbers(numbers)
 
         return PerfResult(size = numbers.size, data = Unit)
     }
 
     protected fun sortSequence(sortSequence: (String, String) -> Unit) {
         try {
-            sortSequence("input/seq_in1.txt", "temp.txt")
+            sortSequence("input/seq_in1.txt", "input/temp.txt")
             assertFileContent(
-                "temp.txt",
+                "input/temp.txt",
                 """
                         1
                         3
@@ -215,12 +248,12 @@ abstract class AbstractTaskTests : AbstractFileTests() {
                     """.trimIndent()
             )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortSequence("input/seq_in2.txt", "temp.txt")
+            sortSequence("input/seq_in2.txt", "input/temp.txt")
             assertFileContent(
-                "temp.txt",
+                "input/temp.txt",
                 """
                         25
                         39
@@ -234,12 +267,12 @@ abstract class AbstractTaskTests : AbstractFileTests() {
                     """.trimIndent()
             )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortSequence("input/seq_in3.txt", "temp.txt")
+            sortSequence("input/seq_in3.txt", "input/temp.txt")
             assertFileContent(
-                "temp.txt",
+                "input/temp.txt",
                 """
                         25986000
                         39234000
@@ -253,12 +286,12 @@ abstract class AbstractTaskTests : AbstractFileTests() {
                     """.trimIndent()
             )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortSequence("input/seq_in4.txt", "temp.txt")
+            sortSequence("input/seq_in4.txt", "input/temp.txt")
             assertFileContent(
-                "temp.txt",
+                "input/temp.txt",
                 """
                         78
                         32
@@ -273,12 +306,12 @@ abstract class AbstractTaskTests : AbstractFileTests() {
                     """.trimIndent()
             )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortSequence("input/seq_in5.txt", "temp.txt")
+            sortSequence("input/seq_in5.txt", "input/temp.txt")
             assertFileContent(
-                "temp.txt",
+                "input/temp.txt",
                 """
                         78
                         13
@@ -293,25 +326,67 @@ abstract class AbstractTaskTests : AbstractFileTests() {
                     """.trimIndent()
             )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
         }
         try {
-            sortSequence("input/empty.txt", "temp.txt")
-            assertFileContent("temp.txt", "")
+            sortSequence("input/seq_in6.txt", "input/temp.txt")
+            assertFileContent(
+                "input/temp.txt",
+                """
+                        10
+                        11
+                        90000
+                        3489
+                        990
+                        300000
+                        57
+                        1111
+                        2941409
+                        5
+                    """.trimIndent()
+            )
         } finally {
-            File("temp.txt").delete()
+            File("input/temp.txt").delete()
+        }
+        try {
+            sortSequence("input/seq_in7.txt", "input/temp.txt")
+            assertFileContent(
+                "input/temp.txt",
+                """
+                        5
+                        6
+                        10
+                        5
+                        6
+                        10
+                        8
+                        4
+                        8
+                        4
+                        1
+                        1
+                    """.trimIndent()
+            )
+        } finally {
+            File("input/temp.txt").delete()
+        }
+        try {
+            sortSequence("input/empty.txt", "input/temp.txt")
+            assertFileContent("input/temp.txt", "")
+        } finally {
+            File("input/temp.txt").delete()
         }
 
         fun testGeneratedSequence(totalSize: Int, answerSize: Int): PerfResult<Unit> {
             try {
                 val res = generateSequence(totalSize, answerSize)
-                val time = measureNanoTime { sortSequence("temp_sequence.txt", "temp.txt") }
-                assertFileContent("temp.txt", File("temp_sequence_expected.txt").readLines())
+                val time = measureNanoTime { sortSequence("input/temp_sequence.txt", "input/temp.txt") }
+                assertFileContent("input/temp.txt", File("input/temp_sequence_expected.txt").readLines())
                 return res.copy(time = time)
             } finally {
-                File("temp_sequence_expected.txt").delete()
-                File("temp_sequence.txt").delete()
-                File("temp.txt").delete()
+                File("input/temp_sequence_expected.txt").delete()
+                File("input/temp_sequence.txt").delete()
+                File("input/temp.txt").delete()
             }
         }
 
