@@ -8,8 +8,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import static java.lang.Math.sqrt;
-
 @SuppressWarnings("unused")
 public class JavaAlgorithms {
     /**
@@ -38,36 +36,37 @@ public class JavaAlgorithms {
      */
     static public Pair<Integer, Integer> optimizeBuyAndSell(String inputName) throws IOException {
         //Время О(n)
-        //Ресурсоемкость S(1)
+        //Ресурсоемкость O(1)
         Pair<Integer, Integer> sell = new Pair<>(0, 0);
         Pair<Integer, Integer> buy = new Pair<>(0, 0);
         Pair <Integer, Integer> possibleBuy = new Pair<>(0, 0);
         int lineNumber = 0;
         String currentLine;
         int currentCost;
-        Scanner reader = new Scanner(Paths.get(inputName));
-        while (reader.hasNextLine()) {
-            currentLine = reader.nextLine();
-            if (!currentLine.matches("^\\d+$")) throw new IllegalArgumentException();
-            lineNumber++;
+        try (Scanner reader = new Scanner(Paths.get(inputName))) {
+            while (reader.hasNextLine()) {
+                currentLine = reader.nextLine();
+                if (!currentLine.matches("^\\d+$")) throw new IllegalArgumentException();
+                lineNumber++;
 
-            if (lineNumber == 1) {
+                if (lineNumber == 1) {
+                    currentCost = Integer.parseInt(currentLine);
+                    sell = new Pair<>(lineNumber, currentCost);
+                    buy = new Pair<>(lineNumber, currentCost);
+                    possibleBuy = new Pair<>(lineNumber, currentCost);
+                    continue;
+                }
+
                 currentCost = Integer.parseInt(currentLine);
-                sell = new Pair<>(lineNumber, currentCost);
-                buy = new Pair<>(lineNumber, currentCost);
-                possibleBuy = new Pair<>(lineNumber, currentCost);
-                continue;
+                if (currentCost - buy.getSecond() > sell.getSecond() - buy.getSecond())
+                    sell = new Pair<>(lineNumber, currentCost);
+                if (currentCost - possibleBuy.getSecond() > sell.getSecond() - buy.getSecond()) {
+                    sell = new Pair<>(lineNumber, currentCost);
+                    buy = new Pair<>(possibleBuy.getFirst(), possibleBuy.getSecond());
+                }
+                if (possibleBuy.getSecond() > currentCost)
+                    possibleBuy = new Pair<>(lineNumber, currentCost);
             }
-
-            currentCost = Integer.parseInt(currentLine);
-            if (currentCost - buy.getSecond() > sell.getSecond() - buy.getSecond())
-                sell = new Pair<>(lineNumber, currentCost);
-            if (currentCost - possibleBuy.getSecond() > sell.getSecond() - buy.getSecond()) {
-                sell = new Pair<>(lineNumber, currentCost);
-                buy = new Pair<>(possibleBuy.getFirst(), possibleBuy.getSecond());
-            }
-            if (possibleBuy.getSecond() > currentCost)
-                possibleBuy =  new Pair<>(lineNumber, currentCost);
         }
         return new Pair<>(buy.getFirst(), sell.getFirst());
     }
@@ -139,7 +138,7 @@ public class JavaAlgorithms {
     static public String longestCommonSubstring(String first, String second) {
         //m - длина первой строки, n - длина второй строки
         //Время О(m * n)
-        //Ресурсоемкость S(m * n)
+        //Ресурсоемкость O(m * n)
 
         if(first.length() == 0 ||second.length() == 0) return "";
 
@@ -176,7 +175,7 @@ public class JavaAlgorithms {
     static public int calcPrimesNumber(int limit) {
         //Алгоритм решета Эратосфена
         //Время О(nlog(log(n)))
-        //Ресурсоемкость S(n)
+        //Ресурсоемкость O(n)
 
         if (limit <= 1) return 0;
         int counter = 0;
