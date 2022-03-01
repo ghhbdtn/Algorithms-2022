@@ -45,22 +45,22 @@ public class JavaTasks {
         //Время О(nlog(n))
         //Ресурсоемкость O(n)
 
-        List<String> result = new ArrayList<>();
+        List<Pair<String, Integer>> result = new ArrayList<>();
         try ( BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputName)))) {
             String timeStr = reader.readLine();
             while(timeStr != null){
                 int seconds = timeToSeconds(timeStr);
-                result.add(timeStr + "&" + seconds);
+                result.add(new Pair<>(timeStr, seconds));
                 timeStr = reader.readLine();
             }
         }
 
-        result.sort(Comparator.comparingInt(s -> parseInt(s.split("&")[1])));
+        result.sort(Comparator.comparingInt(Pair<String, Integer>::getSecond));
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputName))) {
             String finalStr;
-            for (String time : result) {
-                finalStr = time.split("&")[0];
+            for (Pair<String, Integer> time : result) {
+                finalStr = time.getFirst();
                 writer.write(finalStr + "\n");
             }
         }
@@ -232,15 +232,15 @@ public class JavaTasks {
                 maxCountNum = new Pair<>(entry.getKey(), entry.getValue());
         }
 
-        PrintWriter writer = new PrintWriter(outputName, StandardCharsets.UTF_8);
-        for (Integer num : numbers) {
-            if (!Objects.equals(num, maxCountNum.getFirst()))
-                writer.write(num + "\n");
+        try(PrintWriter writer = new PrintWriter(outputName, StandardCharsets.UTF_8)) {
+            for (Integer num : numbers) {
+                if (!Objects.equals(num, maxCountNum.getFirst()))
+                    writer.write(num + "\n");
+            }
+            for (int i = 0; i < maxCountNum.getSecond(); i++) {
+                writer.write(maxCountNum.getFirst() + "\n");
+            }
         }
-        for (int i = 0; i < maxCountNum.getSecond(); i++) {
-            writer.write(maxCountNum.getFirst() + "\n");
-        }
-        writer.close();
     }
 
     /**
