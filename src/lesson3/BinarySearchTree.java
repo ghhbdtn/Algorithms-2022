@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> implements CheckableSortedSet<T> {
 
     private static class Node<T> {
-        final T value;
+        T value;
         Node<T> left = null;
         Node<T> right = null;
 
@@ -99,10 +99,48 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
      *
      * Средняя
      */
+    // Трудоёмксость: O(log(n))
+    // Ресурсоёмкость: O(1)
     @Override
     public boolean remove(Object o) {
-        // TODO
-        throw new NotImplementedError();
+       if (!contains(o)) return false;
+       @SuppressWarnings("unchecked")
+       T value = (T) o;
+       root = removeNode(root, value);
+       size--;
+       return true;
+    }
+
+    private Node<T> removeNode (Node<T> currentNode, T value){
+        if (currentNode == null) {
+            return null;
+        }
+        int comparison = value.compareTo(currentNode.value);
+        if (comparison == 0){
+            if (currentNode.left == null && currentNode.right == null) {
+                return null;
+            }
+            if (currentNode.right == null) {
+                return currentNode.left;
+            }
+            if (currentNode.left == null) {
+                return currentNode.right;
+            }
+            T smallestValue = smallestValue(currentNode.right);
+            currentNode.value = smallestValue;
+            currentNode.right = removeNode(currentNode.right, smallestValue);
+        }
+        else if (comparison > 0) {
+            currentNode.right = removeNode(currentNode.right, value);
+        }
+        else {
+            currentNode.left = removeNode(currentNode.left, value);
+        }
+        return currentNode;
+    }
+
+    private T smallestValue(Node<T> t) {
+        return t.left == null ? t.value : smallestValue(t.left);
     }
 
     @Nullable
@@ -119,8 +157,21 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
 
     public class BinarySearchTreeIterator implements Iterator<T> {
 
+        Stack<Node<T>> stack = new Stack<>();
+        Node<T> currentNode = root;
+        Node<T> next;
+
         private BinarySearchTreeIterator() {
-            // Добавьте сюда инициализацию, если она необходима.
+            pushLeftSubTree();
+        }
+
+        private void pushLeftSubTree () {
+            // Трудоёмксость: O(log(n))
+            // Ресурсоёмкость: O(log(n))
+            while (currentNode != null) {
+                stack.push(currentNode);
+                currentNode = currentNode.left;
+            }
         }
 
         /**
@@ -135,8 +186,9 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
          */
         @Override
         public boolean hasNext() {
-            // TODO
-            throw new NotImplementedError();
+            // Трудоёмксость: O(1)
+            // Ресурсоёмкость: O(1)
+            return (!stack.empty());
         }
 
         /**
@@ -154,8 +206,14 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
          */
         @Override
         public T next() {
-            // TODO
-            throw new NotImplementedError();
+            // Трудоёмксость: O(log(n))
+            // Ресурсоёмкость: O(log(n))
+            if (!hasNext()) throw new NoSuchElementException();
+            currentNode = stack.pop();
+            next = currentNode;
+            currentNode = currentNode.right;
+            pushLeftSubTree();
+            return next.value;
         }
 
         /**
@@ -172,8 +230,11 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
          */
         @Override
         public void remove() {
-            // TODO
-            throw new NotImplementedError();
+            // Трудоёмксость: O(log(n))
+            // Ресурсоёмкость: O(1)
+            if (next == null) throw new IllegalStateException();
+            BinarySearchTree.this.remove(next.value);
+            next = null;
         }
     }
 

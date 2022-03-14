@@ -1,9 +1,11 @@
 package lesson4;
 
 import java.util.*;
-import kotlin.NotImplementedError;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Префиксное дерево для строк
@@ -71,7 +73,7 @@ public class Trie extends AbstractSet<String> implements Set<String> {
     }
 
     @Override
-    public boolean remove(Object o) {
+    public boolean remove (Object o){
         String element = (String) o;
         Node current = findNode(element);
         if (current == null) return false;
@@ -92,8 +94,73 @@ public class Trie extends AbstractSet<String> implements Set<String> {
     @NotNull
     @Override
     public Iterator<String> iterator() {
-        // TODO
-        throw new NotImplementedError();
+        return new TrieIterator();
+    }
+
+    public class TrieIterator implements Iterator<String> {
+
+        private String next = null;
+        private Deque<Iterator<Entry<Character, Node>>> stack = new ArrayDeque<>();
+        private StringBuilder sb = new StringBuilder();
+        Boolean needNext = true;
+
+        private TrieIterator() {
+            stack.push(root.children.entrySet().iterator());
+        }
+
+        public String findNext() {
+            // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
+            // Ресурсоёмкость: O(1)
+            Iterator<Entry<Character, Node>> iterator = stack.peek();
+            while (iterator != null){
+                while (iterator.hasNext()) {
+                    Entry<Character, Node> entry = iterator.next();
+                    char key = entry.getKey();
+                    Node value = entry.getValue();
+                    if (key == (char) 0) {
+                        return sb.toString();
+
+                    }
+                    sb.append(key);
+                    iterator = value.children.entrySet().iterator();
+                    stack.push(iterator);
+                }
+                stack.pop();
+                if (!sb.isEmpty()) sb.deleteCharAt(sb.length() - 1);
+                iterator = stack.peek();
+            }
+            return null;
+        }
+
+        @Override
+        public boolean hasNext() {
+            // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
+            // Ресурсоёмкость: O(1)
+           if (needNext){
+                needNext = false;
+                next = findNext();
+            }
+            return next != null;
+        }
+
+        @Override
+        public String next() {
+            // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
+            // Ресурсоёмкость: O(1)
+            if (!hasNext()) throw new NoSuchElementException();
+            needNext = true;
+            return next;
+        }
+
+        @Override
+        public void remove() {
+            // Трудоёмксость: O(1)
+            // Ресурсоёмкость: O(1)
+            if (next == null) throw new IllegalStateException();
+            stack.peek().remove();
+            next = null;
+            size--;
+        }
     }
 
 }
