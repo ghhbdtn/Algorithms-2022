@@ -5,7 +5,6 @@ import java.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Префиксное дерево для строк
@@ -100,33 +99,32 @@ public class Trie extends AbstractSet<String> implements Set<String> {
     public class TrieIterator implements Iterator<String> {
 
         private String next = null;
-        private Deque<Iterator<Entry<Character, Node>>> stack = new ArrayDeque<>();
-        private StringBuilder sb = new StringBuilder();
-        Boolean needNext = true;
+        private final Deque<Iterator<Entry<Character, Node>>> stack = new ArrayDeque<>();
+        private final StringBuilder sb = new StringBuilder();
+        Boolean need = true;
 
-        private TrieIterator() {
-            stack.push(root.children.entrySet().iterator());
-        }
+        private TrieIterator() {stack.push(root.children.entrySet().iterator());}
 
         public String findNext() {
             // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
-            // Ресурсоёмкость: O(1)
+            // Ресурсоёмкость: O(h - длина самого длинного слова)
             Iterator<Entry<Character, Node>> iterator = stack.peek();
             while (iterator != null){
                 while (iterator.hasNext()) {
                     Entry<Character, Node> entry = iterator.next();
-                    char key = entry.getKey();
                     Node value = entry.getValue();
+                    char key = entry.getKey();
                     if (key == (char) 0) {
                         return sb.toString();
-
                     }
                     sb.append(key);
                     iterator = value.children.entrySet().iterator();
                     stack.push(iterator);
                 }
                 stack.pop();
-                if (!sb.isEmpty()) sb.deleteCharAt(sb.length() - 1);
+                if (!sb.isEmpty()) {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
                 iterator = stack.peek();
             }
             return null;
@@ -135,20 +133,20 @@ public class Trie extends AbstractSet<String> implements Set<String> {
         @Override
         public boolean hasNext() {
             // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
-            // Ресурсоёмкость: O(1)
-           if (needNext){
-                needNext = false;
-                next = findNext();
+            // Ресурсоёмкость: O(h - длина самого длинного слова)
+          if (need){
+              next = findNext();
+              need = false;
             }
-            return next != null;
+          return next != null;
         }
 
         @Override
         public String next() {
             // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
-            // Ресурсоёмкость: O(1)
+            // Ресурсоёмкость: O(h - длина самого длинного слова)
             if (!hasNext()) throw new NoSuchElementException();
-            needNext = true;
+            need = true;
             return next;
         }
 
@@ -157,9 +155,11 @@ public class Trie extends AbstractSet<String> implements Set<String> {
             // Трудоёмксость: O(1)
             // Ресурсоёмкость: O(1)
             if (next == null) throw new IllegalStateException();
-            stack.peek().remove();
-            next = null;
-            size--;
+            if (stack.peek() != null) {
+                stack.peek().remove();
+                next = null;
+                size--;
+            }
         }
     }
 
