@@ -101,14 +101,20 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
      */
     // Трудоёмксость: O(log(n))
     // Ресурсоёмкость: O(1)
+
+    private Boolean removeCheck;
+
     @Override
     public boolean remove(Object o) {
-       if (!contains(o)) return false;
-       @SuppressWarnings("unchecked")
-       T value = (T) o;
-       root = removeNode(root, value);
-       size--;
-       return true;
+        removeCheck = false;
+        @SuppressWarnings("unchecked")
+        T value = (T) o;
+        root = removeNode(root, value);
+        if (removeCheck) {
+            size--;
+            return true;
+        }
+        else return false;
     }
 
     private Node<T> removeNode (Node<T> currentNode, T value){
@@ -117,6 +123,7 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
         }
         int comparison = value.compareTo(currentNode.value);
         if (comparison == 0){
+            removeCheck = true;
             if (currentNode.left == null && currentNode.right == null) {
                 return null;
             }
@@ -139,6 +146,7 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
         return currentNode;
     }
 
+
     private T smallestValue(Node<T> t) {
         return t.left == null ? t.value : smallestValue(t.left);
     }
@@ -158,26 +166,26 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
     public class BinarySearchTreeIterator implements Iterator<T> {
 
         Stack<Node<T>> stack = new Stack<>();
-        Node<T> currentNode = root;
-        Node<T> next;
+        Node<T> currentNode;
+        Node<T> previousNode;
 
         private BinarySearchTreeIterator() {
-            pushLeftSubTree();
+            pushLeftSubTree(root);
         }
 
-        private void pushLeftSubTree () {
+        private void pushLeftSubTree (Node<T> node) {
             // Трудоёмксость: O(log(n))
             // Ресурсоёмкость: O(log(n))
-            while (currentNode != null) {
-                stack.push(currentNode);
-                currentNode = currentNode.left;
+            while (node != null) {
+                stack.push(node);
+                node = node.left;
             }
         }
 
         /**
          * Проверка наличия следующего элемента
          *
-         * Функция возвращает true, если итерация по множеству ещё не окончена (то есть, если вызов next() вернёт
+         * Функция возвращает true, если итерация по множеству ещё не окончена (то есть, если вызов previousNode() вернёт
          * следующий элемент множества, а не бросит исключение); иначе возвращает false.
          *
          * Спецификация: {@link Iterator#hasNext()} (Ctrl+Click по hasNext)
@@ -196,11 +204,11 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
          *
          * Функция возвращает следующий элемент множества.
          * Так как BinarySearchTree реализует интерфейс SortedSet, последовательные
-         * вызовы next() должны возвращать элементы в порядке возрастания.
+         * вызовы previousNode() должны возвращать элементы в порядке возрастания.
          *
          * Бросает NoSuchElementException, если все элементы уже были возвращены.
          *
-         * Спецификация: {@link Iterator#next()} (Ctrl+Click по next)
+         * Спецификация: {@link Iterator#next()} (Ctrl+Click по previousNode)
          *
          * Средняя
          */
@@ -209,20 +217,19 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
             // Трудоёмксость: O(log(n))
             // Ресурсоёмкость: O(log(n))
             if (!hasNext()) throw new NoSuchElementException();
+            previousNode = currentNode;
             currentNode = stack.pop();
-            next = currentNode;
-            currentNode = currentNode.right;
-            pushLeftSubTree();
-            return next.value;
+            pushLeftSubTree(currentNode.right);
+            return currentNode.value;
         }
 
         /**
          * Удаление предыдущего элемента
          *
-         * Функция удаляет из множества элемент, возвращённый крайним вызовом функции next().
+         * Функция удаляет из множества элемент, возвращённый крайним вызовом функции previousNode().
          *
-         * Бросает IllegalStateException, если функция была вызвана до первого вызова next() или же была вызвана
-         * более одного раза после любого вызова next().
+         * Бросает IllegalStateException, если функция была вызвана до первого вызова previousNode() или же была вызвана
+         * более одного раза после любого вызова previousNode().
          *
          * Спецификация: {@link Iterator#remove()} (Ctrl+Click по remove)
          *
@@ -230,11 +237,15 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
          */
         @Override
         public void remove() {
-            // Трудоёмксость: O(log(n))
+            // Трудоёмксость: O(1)
             // Ресурсоёмкость: O(1)
-            if (next == null) throw new IllegalStateException();
-            BinarySearchTree.this.remove(next.value);
-            next = null;
+            if (currentNode == null) throw new IllegalStateException();
+            if (root == currentNode) BinarySearchTree.this.remove(currentNode.value);
+            else {
+                BinarySearchTree.this.removeNode(previousNode, currentNode.value);
+                size--;
+            }
+            currentNode = null;
         }
     }
 

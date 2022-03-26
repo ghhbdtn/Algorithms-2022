@@ -90,6 +90,7 @@ public class Trie extends AbstractSet<String> implements Set<String> {
      *
      * Сложная
      */
+
     @NotNull
     @Override
     public Iterator<String> iterator() {
@@ -98,14 +99,16 @@ public class Trie extends AbstractSet<String> implements Set<String> {
 
     public class TrieIterator implements Iterator<String> {
 
-        private String next = null;
+        private String next;
         private final Deque<Iterator<Entry<Character, Node>>> stack = new ArrayDeque<>();
         private final StringBuilder sb = new StringBuilder();
-        Boolean need = true;
+        int count = 0;
 
-        private TrieIterator() {stack.push(root.children.entrySet().iterator());}
+        private TrieIterator() {
+           stack.push(root.children.entrySet().iterator());
+        }
 
-        public String findNext() {
+        public void findNext() {
             // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
             // Ресурсоёмкость: O(h - длина самого длинного слова)
             Iterator<Entry<Character, Node>> iterator = stack.peek();
@@ -115,7 +118,9 @@ public class Trie extends AbstractSet<String> implements Set<String> {
                     Node value = entry.getValue();
                     char key = entry.getKey();
                     if (key == (char) 0) {
-                        return sb.toString();
+                        count++;
+                        next = sb.toString();
+                        return;
                     }
                     sb.append(key);
                     iterator = value.children.entrySet().iterator();
@@ -127,18 +132,13 @@ public class Trie extends AbstractSet<String> implements Set<String> {
                 }
                 iterator = stack.peek();
             }
-            return null;
         }
 
         @Override
         public boolean hasNext() {
-            // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
-            // Ресурсоёмкость: O(h - длина самого длинного слова)
-          if (need){
-              next = findNext();
-              need = false;
-            }
-          return next != null;
+            // Трудоёмксость: O(1)
+            // Ресурсоёмкость: O(1)
+            return count < size;
         }
 
         @Override
@@ -146,7 +146,7 @@ public class Trie extends AbstractSet<String> implements Set<String> {
             // Трудоёмксость: O(N - суммарная длина всех слов в худшем случае)
             // Ресурсоёмкость: O(h - длина самого длинного слова)
             if (!hasNext()) throw new NoSuchElementException();
-            need = true;
+            findNext();
             return next;
         }
 
@@ -159,8 +159,8 @@ public class Trie extends AbstractSet<String> implements Set<String> {
                 stack.peek().remove();
                 next = null;
                 size--;
+                count--;
             }
         }
     }
-
 }
