@@ -102,7 +102,7 @@ public class Trie extends AbstractSet<String> implements Set<String> {
         private String next;
         private final Deque<Iterator<Entry<Character, Node>>> stack = new ArrayDeque<>();
         private final StringBuilder sb = new StringBuilder();
-        int count = 0;
+        private int count = 0;
 
         private TrieIterator() {
            stack.push(root.children.entrySet().iterator());
