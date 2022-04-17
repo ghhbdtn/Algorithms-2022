@@ -1,10 +1,10 @@
 package lesson5;
 
-import kotlin.NotImplementedError;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.AbstractSet;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class OpenAddressingSet<T> extends AbstractSet<T> {
@@ -14,6 +14,8 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
     private final int capacity;
 
     private final Object[] storage;
+
+    private Object DELETED = new Object();
 
     private int size = 0;
 
@@ -67,7 +69,7 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
         int startingIndex = startingIndex(t);
         int index = startingIndex;
         Object current = storage[index];
-        while (current != null) {
+        while (current != null && current != DELETED) {
             if (current.equals(t)) {
                 return false;
             }
@@ -95,9 +97,21 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
      */
     @Override
     public boolean remove(Object o) {
-        return super.remove(o);
+        // Трудоёмксость: O(N)
+        // Ресурсоёмкость: O(1)
+        int index = startingIndex(o);
+        Object current = storage[index];
+        while (current != null && current != DELETED) {
+            if (current.equals(o)) {
+                storage[index] = DELETED;
+                size--;
+                return  true;
+            }
+            index = (index + 1) % capacity;
+            current = storage[index];
+        }
+        return false;
     }
-
     /**
      * Создание итератора для обхода таблицы
      *
@@ -111,7 +125,47 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
     @NotNull
     @Override
     public Iterator<T> iterator() {
-        // TODO
-        throw new NotImplementedError();
+        return new OpenAddressingSetIterator();
+    }
+    public class OpenAddressingSetIterator implements Iterator<T> {
+
+        private int index = 0;
+        private int count= 0;
+        private Object next = null;
+
+        @Override
+        public boolean hasNext() {
+            // Трудоёмксость: O(1)
+            // Ресурсоёмкость: O(1)
+            return count < size;
+        }
+
+        @SuppressWarnings("Unchecked")
+        @Override
+        public T next() {
+            // Трудоёмксость: O(N)
+            // Ресурсоёмкость: O(1)
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            while (storage[index] == null || storage[index] == DELETED) {
+                index++;
+            }
+            next = storage[index];
+            count++;
+            index++;
+            return (T) next;
+        }
+
+        @Override
+        public void remove() {
+            // Трудоёмксость: O(1)
+            // Ресурсоёмкость: O(1)
+            if (next == null) throw new IllegalStateException();
+            storage[index - 1] = DELETED;
+            next = null;
+            size--;
+            count--;
+        }
     }
 }
