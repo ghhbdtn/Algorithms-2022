@@ -99,18 +99,17 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
     public boolean remove(Object o) {
         // Трудоёмксость: O(N)
         // Ресурсоёмкость: O(1)
-        int index = startingIndex(o);
+        int startIndex = startingIndex(o);
+        int index = startIndex;
         Object current = storage[index];
-        while (current != null && current != DELETED) {
-            if (current.equals(o)) {
-                storage[index] = DELETED;
-                size--;
-                return  true;
-            }
+        while (!current.equals(o)) {
             index = (index + 1) % capacity;
             current = storage[index];
+            if (index == startIndex || current == null) return false;
         }
-        return false;
+        storage[index] = DELETED;
+        size--;
+        return true;
     }
     /**
      * Создание итератора для обхода таблицы
