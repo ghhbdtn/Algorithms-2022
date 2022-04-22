@@ -102,14 +102,17 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
         int startIndex = startingIndex(o);
         int index = startIndex;
         Object current = storage[index];
-        while (!current.equals(o)) {
+        while (current != null && current != DELETED) {
+            if (current.equals(o)) {
+                storage[index] = DELETED;
+                size--;
+                return true;
+            }
             index = (index + 1) % capacity;
+            if (index == startIndex) return false;
             current = storage[index];
-            if (index == startIndex || current == null) return false;
         }
-        storage[index] = DELETED;
-        size--;
-        return true;
+        return false;
     }
     /**
      * Создание итератора для обхода таблицы
