@@ -3,6 +3,7 @@ package lesson7;
 import kotlin.NotImplementedError;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Math.max;
@@ -73,9 +74,7 @@ public class JavaDynamicTasks {
         int[] prevPosition = new int[list.size()];
         int length = 0;
 
-        for (int i = 0; i < d.length; i++) {
-            d[i] = Integer.MIN_VALUE;
-        }
+        Arrays.fill(d, Integer.MIN_VALUE);
         d[0] = Integer.MAX_VALUE;
         seqPosition[0] = -1;
 
