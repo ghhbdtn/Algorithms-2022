@@ -28,9 +28,7 @@ public class JavaDynamicTasks {
         int[][] matrix = new int[first.length() + 1][second.length() + 1];
         for (int i = 1; i <= first.length(); i++) {
             for (int j = 1; j <= second.length(); j++) {
-                if (i == 0 || j == 0)
-                    matrix[i][i] = 0;
-                else if (first.charAt(i - 1) == second.charAt(j - 1))
+                if (first.charAt(i - 1) == second.charAt(j - 1))
                     matrix[i][j] = matrix[i - 1][j - 1] + 1;
                 else matrix[i][j] = max(matrix[i - 1][j], matrix[i][j - 1]);
             }
