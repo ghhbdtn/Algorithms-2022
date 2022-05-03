@@ -2,7 +2,10 @@ package lesson7;
 
 import kotlin.NotImplementedError;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.Math.max;
 
 @SuppressWarnings("unused")
 public class JavaDynamicTasks {
@@ -19,7 +22,32 @@ public class JavaDynamicTasks {
      * При сравнении подстрок, регистр символов *имеет* значение.
      */
     public static String longestCommonSubSequence(String first, String second) {
-        throw new NotImplementedError();
+        //Трудоемкость O(first.length * second.length)
+        //Ресурсоемкость O(first.length * second.length)
+        int[][] matrix = new int[first.length() + 1][second.length() + 1];
+        for (int i = 1; i <= first.length(); i++) {
+            for (int j = 1; j <= second.length(); j++) {
+                if (i == 0 || j == 0)
+                    matrix[i][i] = 0;
+                else if (first.charAt(i - 1) == second.charAt(j - 1))
+                    matrix[i][j] = matrix[i - 1][j - 1] + 1;
+                else matrix[i][j] = max(matrix[i - 1][j], matrix[i][j - 1]);
+            }
+        }
+        StringBuilder result = new StringBuilder();
+        int i = first.length();
+        int j = second.length();
+        while (i > 0 && j > 0) {
+            if (matrix[i][j] == matrix[i - 1][j])
+                j++;
+            else if (matrix[i][j - 1] == matrix[i][j])
+                i++;
+            else result.append(first.charAt(i - 1));
+            i--;
+            j--;
+        }
+
+        return  result.reverse().toString();
     }
 
     /**
@@ -35,7 +63,58 @@ public class JavaDynamicTasks {
      * В примере ответами являются 2, 8, 9, 12 или 2, 5, 9, 12 -- выбираем первую из них.
      */
     public static List<Integer> longestIncreasingSubSequence(List<Integer> list) {
-        throw new NotImplementedError();
+        //Трудоемкость O(N*logN)
+        //Ресурсоемкость O(N)
+
+        if (list.isEmpty()) return new ArrayList<>();
+
+        int[] d = new int[list.size() + 1];
+        int[] seqPosition = new int[list.size() + 1];
+        int[] prevPosition = new int[list.size()];
+        int length = 0;
+
+        for (int i = 0; i < d.length; i++) {
+            d[i] = Integer.MIN_VALUE;
+        }
+        d[0] = Integer.MAX_VALUE;
+        seqPosition[0] = -1;
+
+        for (int i = list.size() - 1; i >= 0; i--) {
+            int index = binarySearch(d, list.get(i));
+            if (d[index - 1] > list.get(i) && list.get(i) > d[index]) {
+                d[index] = list.get(i);
+                seqPosition[index] = i;
+                prevPosition[i] = seqPosition[index - 1];
+                length = max(length, index);
+            }
+        }
+
+        List<Integer> res = new ArrayList<>();
+        if (length == 1) {
+            res.add(list.get(0));
+            return res;
+        }
+
+        int p = seqPosition[length];
+        while (p != -1) {
+            res.add(list.get(p));
+            p = prevPosition[p];
+        }
+        return res;
+    }
+
+    private static int binarySearch(int[] d, Integer x) {
+        int left = 0;
+        int right = d.length - 1;
+        while (right - left > 1) {
+            int median = (left + right) / 2;
+            if (x < d[median]) {
+                left = median;
+            } else {
+                right = median;
+            }
+        }
+        return right;
     }
 
     /**
